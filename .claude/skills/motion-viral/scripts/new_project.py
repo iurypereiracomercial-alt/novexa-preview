@@ -51,6 +51,10 @@ def main():
     for sub in ("audio", "sfx", "media"):
         (d / sub).mkdir(exist_ok=True)
     shutil.copy(ROOT / "assets" / "engine" / "composition.html", d / "index.html")
+    tr = d / "transcricao.txt"
+    if not tr.exists():  # espaço para a transcrição do áudio enviado pelo usuário (linhas com # são ignoradas)
+        tr.write_text("# TRANSCRIÇÃO DO ÁUDIO — cole abaixo o texto EXATO que é falado no áudio enviado.\n"
+                      "# Ela define o texto do vídeo, a sincronia palavra a palavra e a ortografia. Linhas com # são ignoradas.\n\n")
     if not (d / "data.json").exists():
         ex = json.loads(json.dumps(EXAMPLE))
         ex["style"] = a.style

@@ -57,9 +57,16 @@ Opções extras: `"kenburns": "in|out|left|right|none"`, `"imagePos"`, `"offset"
 python SKILL_DIR/scripts/user_audio.py work/<slug> media/narracao.mp3 [--denoise] [--raw]   # ou make.py --voice-file
 ```
 - Formatos: MP3, WAV, M4A, OGG, ou até o áudio de um vídeo (MP4/MOV).
+- **Transcrição primeiro:** sempre peça ao usuário o texto exato do áudio (passo 0.1 do SKILL.md) e passe com
+  `--transcript work/<slug>/transcricao.txt`. Com ela, o script monta as cenas sozinho (`showDraft: true`) e você só
+  reescreve os `show`. Sem `--transcript`, o script lê `transcricao.txt` do projeto, se estiver preenchido.
+- **Conferência:** com Whisper disponível, o script imprime "conferência transcrição x áudio: NN%". Abaixo de 90%,
+  a transcrição provavelmente não corresponde ao áudio (outra versão do texto, trecho faltando): confirme com o usuário.
 - **Sincronia:**
-  - Com Whisper instalado (`pip install faster-whisper`), usa os tempos reais de cada palavra. Se as cenas não
-    tiverem `say`, o script cria as cenas a partir da transcrição; depois ajuste os `show` sem mexer nos tempos.
+  - Com Whisper instalado (`pip install faster-whisper`), usa os tempos reais de cada palavra.
+  - Sem faster-whisper, tenta o **sherpa-onnx** (`pip install sherpa-onnx`; o modelo Whisper ~640 MB baixa do GitHub
+    uma única vez e funciona mesmo em redes restritas). Ele transcreve cada trecho entre pausas e liga as palavras da
+    transcrição a esses trechos (precisão de ~0,1 s).
   - Sem Whisper, usa o `say` de cada cena (o texto exato falado) e alinha os fins de frase às pausas da gravação.
     Peça o roteiro ao usuário, ou transcreva você mesmo ouvindo trechos curtos se ele não tiver.
 - O silêncio do início é removido, para a voz entrar no quadro 0.

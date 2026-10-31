@@ -32,9 +32,33 @@ pergunte em uma mensagem curta e numerada:
    - *Sem narração (só música/SFX)* → `--engine none`
 
 Pule só a pergunta que o usuário já respondeu no pedido (ex.: já anexou a narração). Se ele escolher **enviar**
-material, peça os arquivos e **espere recebê-los** antes de produzir. Mas adiante o roteiro: quando a narração vier
-dele, peça também o texto exato do que foi falado, que vira o `say` e garante a sincronia e a ortografia. Detalhes de
-cada caminho (requisitos de imagem, prompts, alinhamento de voz) estão em `references/media.md`.
+material, peça os arquivos e **espere recebê-los** antes de produzir. Detalhes de cada caminho (requisitos de imagem,
+prompts, alinhamento de voz) estão em `references/media.md`.
+
+### 0.1 Áudio com fala recebido → peça a TRANSCRIÇÃO primeiro
+**Sempre** que o usuário trouxer um áudio com fala (narração, locução, gravação, voz gerada em outra ferramenta),
+antes de produzir qualquer coisa responda deixando o espaço para ele colar a transcrição. O texto exato do áudio é a
+fonte da verdade: ele define o texto na tela, a sincronia palavra a palavra e a ortografia. Use este modelo:
+
+> Recebi o áudio ✅ (duração: XX s). Para eu sincronizar tudo certinho, cole aqui embaixo a **transcrição exata** do
+> que é falado no áudio (do jeito que foi dito, com a pontuação):
+>
+> **TRANSCRIÇÃO:**
+> *(cole aqui)*
+>
+> Se não tiver o texto, me avise que eu transcrevo automaticamente e te mostro para conferir.
+
+- Pule o pedido só se a transcrição já veio junto com o áudio. Não ofereça transcrever automaticamente como atalho
+  silencioso: se o usuário pedir para você transcrever, transcreva e **mostre o texto para ele confirmar** antes de usar.
+- Ao receber: salve em `work/<slug>/transcricao.txt` (o projeto já vem com o espaço) e rode
+  `python SKILL_DIR/scripts/user_audio.py work/<slug> media/<audio> --transcript work/<slug>/transcricao.txt`.
+  O script limpa emojis e travessões, monta as cenas a partir da transcrição (1 ideia por cena, ~2–3 s) e sincroniza
+  com a voz. Se houver modelo Whisper (faster-whisper ou sherpa-onnx, baixado do GitHub), ele confere a transcrição
+  contra o áudio: abaixo de 90% → mostre as diferenças ao usuário antes de seguir.
+- Depois, revise as cenas geradas: reescreva cada `show` (curto, 3–8 palavras, 1 `*destaque*`, números em algarismos)
+  e apague `showDraft`. Pode juntar ou dividir cenas, desde que os `say`, somados, continuem **idênticos** à
+  transcrição (o script refaz as cenas se não baterem).
+- Música/trilha sem fala não precisa de transcrição.
 
 ### 1. Briefing (rápido)
 Extraia do pedido: tema, público, objetivo (seguidores, venda, autoridade), duração (padrão 20–35 s), idioma
@@ -70,8 +94,8 @@ Escolha a linha conforme as respostas do passo 0 (as opções se combinam):
 ```bash
 # voz IA (padrão)
 python SKILL_DIR/scripts/make.py work/<slug> --no-final
-# narração enviada pelo usuário (copie para work/<slug>/media/; "say" das cenas = texto falado)
-python SKILL_DIR/scripts/make.py work/<slug> --voice-file work/<slug>/media/narracao.mp3 [--voice-denoise] --no-final
+# narração enviada pelo usuário + transcrição colada por ele (passo 0.1)
+python SKILL_DIR/scripts/make.py work/<slug> --voice-file work/<slug>/media/narracao.mp3 --transcript work/<slug>/transcricao.txt [--voice-denoise] --no-final
 # música enviada pelo usuário (com voz IA; acrescente --engine none para vídeo só com música)
 python SKILL_DIR/scripts/make.py work/<slug> --music work/<slug>/media/musica.mp3 --beats --no-final
 # imagens geradas pela skill (cenas com "image_prompt"; revise build/images_sheet.png antes de seguir)

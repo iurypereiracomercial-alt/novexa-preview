@@ -10,7 +10,7 @@ echo "== Python"
 python3 -m pip install -q --disable-pip-version-check numpy edge-tts pyspellchecker kokoro-onnx soundfile 2>/dev/null \
   && ok "numpy, edge-tts, pyspellchecker, kokoro-onnx, soundfile" || bad "pip install numpy edge-tts pyspellchecker kokoro-onnx soundfile"
 echo "== Opcional: Whisper (sincronia exata com narração enviada pelo usuário)"
-python3 -c "import faster_whisper" 2>/dev/null && ok "faster-whisper" || echo "  ~ faster-whisper não instalado (opcional): pip install faster-whisper"
+python3 -c "import faster_whisper" 2>/dev/null && ok "faster-whisper" || { python3 -m pip install -q sherpa-onnx 2>/dev/null && ok "sherpa-onnx (Whisper via GitHub)" || echo "  ~ opcional: pip install faster-whisper (ou sherpa-onnx)"; }
 echo "== Playwright/Chromium"
 if node -e "require('playwright')" 2>/dev/null; then ok "playwright"; else
   npm i -g playwright >/dev/null 2>&1 && npx playwright install chromium >/dev/null 2>&1 && ok "playwright instalado" || bad "npm i -g playwright && npx playwright install chromium"; fi

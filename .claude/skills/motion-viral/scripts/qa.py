@@ -106,6 +106,9 @@ def main():
     except ImportError:
         warns.append("pyspellchecker não instalado (pip install pyspellchecker) — revise a ortografia manualmente em build/qa/texts.json")
 
+    drafts = [i for i, sc in enumerate(data.get("scenes", [])) if sc.get("showDraft")]
+    if drafts:
+        errors.append(f"Cenas {drafts} com texto de tela provisório (showDraft) — reescreva o 'show'")
     # coerência fala x tela (palavras exibidas que não são faladas, exceto números/símbolos)
     for sc in data.get("scenes", []):
         if sc.get("say") and sc.get("show") and sc.get("type") not in ("stat",):

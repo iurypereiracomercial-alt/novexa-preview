@@ -13,7 +13,7 @@ Uso:
   python make.py <projeto> [--engine auto|edge|kokoro|none] [--voice X] [--rate +8%]
                  [--music musica.mp3] [--music-db -16] [--beats] [--mblur 4] [--draft]
                  [--skip-tts] [--no-final]   (--no-final: para após os stills, para revisar antes)
-                 [--voice-file narracao.mp3 [--voice-denoise] [--voice-raw]] [--gen-images]
+                 [--voice-file narracao.mp3 [--transcript t.txt] [--voice-denoise] [--voice-raw]] [--gen-images]
 """
 import argparse
 import subprocess
@@ -52,6 +52,7 @@ def main():
     ap.add_argument("--voice-denoise", action="store_true")
     ap.add_argument("--voice-raw", action="store_true", help="não tratar a voz (áudio já masterizado)")
     ap.add_argument("--whisper", default="auto")
+    ap.add_argument("--transcript", help="transcrição exata do áudio do usuário (.txt); padrão: <projeto>/transcricao.txt")
     ap.add_argument("--gen-images", action="store_true", help="gera imagens das cenas com image_prompt")
     a = ap.parse_args()
     p = str(Path(a.project).resolve())
@@ -73,6 +74,8 @@ def main():
             cmd.append("--denoise")
         if a.voice_raw:
             cmd.append("--raw")
+        if a.transcript:
+            cmd += ["--transcript", str(Path(a.transcript).resolve())]
         step("1/6 Narração do usuário + timeline", cmd)
     elif not a.skip_tts:
         cmd = [py, str(HERE / "tts.py"), p, "--engine", a.engine]
@@ -82,6 +85,12 @@ def main():
         if a.music and a.beats:
             cmd += ["--beats", str(Path(p) / "build" / "beats.json")]
         step("1/6 Narração + timeline", cmd)
+    import json
+    drafts = [i for i, sc in enumerate(json.loads((Path(p) / "data.json").read_text()).get("scenes", [])) if sc.get("showDraft")]
+    if drafts:
+        print(f"\n✋ Cenas {drafts} ainda com texto de tela provisório (showDraft). Reescreva o 'show' de cada uma "
+              f"(curto, 1 *destaque*), apague 'showDraft' e rode de novo com --skip-tts.")
+        sys.exit(3)
     step("2/6 Preflight (fontes, glifos, layout)", [node, str(HERE / "render.mjs"), p, "--preflight-only"])
     mcmd = [py, str(HERE / "master_audio.py"), p]
     if a.music:
