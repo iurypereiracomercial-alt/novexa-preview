@@ -68,7 +68,7 @@ O renderizador serve o projeto em `/` e a skill em `/_mv/`.
 | `text` | show, say, kicker | palavras sincronizadas com a voz |
 | `quote` | show | citação (tema define blur/fade) |
 | `list` | num ("#1", "01"), show | número grande + item |
-| `stat` | value {to, from, decimals, prefix, suffix, dur}, show (rótulo) | contagem animada + riser + impact + punch |
+| `stat` | value {to, from, decimals, prefix, suffix, dur, grouping} (grouping:false p/ anos), show (rótulo) | contagem animada + riser + impact + punch |
 | `cta` | show | fechamento (não sai — segura até o fim) |
 | `image` | src (jpg/png/mp4 em media/), offset, show | b-roll em tela cheia com Ken Burns; vídeo é sincronizado quadro a quadro |
 | `html` | html (com `data-anim="pop"` nos filhos) | layout livre |

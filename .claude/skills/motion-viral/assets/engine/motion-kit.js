@@ -208,8 +208,9 @@
   };
 
   /* ---------------- contador (count-up determinístico) ---------------- */
-  MK.counter = function (el, t0, dur, { from = 0, to = 100, decimals = 0, prefix = "", suffix = "", locale = "pt-BR" } = {}) {
-    const fmt = new Intl.NumberFormat(locale, { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+  // grouping:false para anos (1960, não 1.960)
+  MK.counter = function (el, t0, dur, { from = 0, to = 100, decimals = 0, prefix = "", suffix = "", locale = "pt-BR", grouping = true } = {}) {
+    const fmt = new Intl.NumberFormat(locale, { minimumFractionDigits: decimals, maximumFractionDigits: decimals, useGrouping: grouping });
     MK.track(t0, dur, (p) => { const e = 1 - Math.pow(1 - p, 4); el.textContent = prefix + fmt.format(from + (to - from) * e) + suffix; });
   };
   // Scramble determinístico (letras embaralhando até revelar)

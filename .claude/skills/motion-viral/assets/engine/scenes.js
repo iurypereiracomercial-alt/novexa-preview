@@ -116,7 +116,7 @@
     stat: (el, sc, th) => {
       const box = document.createElement("div"); box.className = "textbox stat"; el.appendChild(box);
       const num = document.createElement("div"); num.className = "num"; num.setAttribute("data-qa-text", ""); box.appendChild(num);
-      const v = sc.value || { to: 100 }; const fmt = new Intl.NumberFormat("pt-BR", { minimumFractionDigits: v.decimals || 0, maximumFractionDigits: v.decimals || 0 });
+      const v = sc.value || { to: 100 }; const fmt = new Intl.NumberFormat("pt-BR", { minimumFractionDigits: v.decimals || 0, maximumFractionDigits: v.decimals || 0, useGrouping: v.grouping !== false });
       num.textContent = (v.prefix || "") + fmt.format(v.to) + (v.suffix || ""); // valor final (para medir e checar)
       const dur = v.dur || Math.min(1.4, (sc.end - sc.start) * 0.6);
       MV.tl.add(MK.enter.pop(num), sc.start + 0.02);
