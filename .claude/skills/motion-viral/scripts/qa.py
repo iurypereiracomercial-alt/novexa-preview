@@ -28,7 +28,7 @@ from audiolib import loudness  # noqa: E402
 
 COLLOQUIAL_PT = set("""pra pro pras pros tá tô cê né vc vcs tbm blz ok tipo aí daí bora vamo hein uau nossa caraca galera
 youtube tiktok instagram reels shorts story stories feed post posts like likes link bio app apps ia ai chatgpt claude
-online offline hack hacks viral virais trend trends fyp pov top setup loop loops replay cta hook hooks b-roll
+online offline hack hacks viral virais viraliza viralizar viralizou viralizando viralização trend trends fyp pov top setup loop loops replay cta hook hooks b-roll
 emoji emojis podcast feedback layout design motion insight insights views stories reel""".split())
 
 
@@ -95,6 +95,9 @@ def main():
                     continue
                 if lw not in sp:
                     unknown.setdefault(lw, sp.correction(lw))
+        # o dicionário "pt" do pyspellchecker é de Portugal: ó/ô, é/ê, á/â são variantes válidas no Brasil (bónus = bônus)
+        br = str.maketrans("âêô", "áéó")
+        unknown = {w: c for w, c in unknown.items() if not (c and w.translate(br) == c.translate(br))}
         accent_errors = {w: c for w, c in unknown.items() if c and strip_acc(c) == strip_acc(w) and c != w}
         others = {w: c for w, c in unknown.items() if w not in accent_errors}
         for w, c in accent_errors.items():
