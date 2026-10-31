@@ -116,9 +116,8 @@ def synth_kokoro(text, voice, speed, lang):
     return x, estimate_words(text, x)
 
 
-def estimate_words(text, x):
-    """Estima o tempo de cada palavra: divide a fala em trechos separados por pausas e distribui
-    as palavras de cada frase (pontuação) pelo trecho correspondente, proporcional às sílabas."""
+def voiced_segments(x, min_gap=0.12):
+    """Trechos com voz (s), separados por pausas >= min_gap."""
     env = db(envelope(x, win=0.015))
     voiced = env > (np.max(env) - 38)
     hop = int(0.01 * SR)
@@ -133,23 +132,62 @@ def estimate_words(text, x):
     if cur is not None:
         segs.append([cur, len(v)])
     merged = []
-    for s in segs:  # junta trechos separados por pausas < 120 ms
-        if merged and s[0] - merged[-1][1] < 12:
-            merged[-1][1] = s[1]
+    for sg in segs:
+        if merged and sg[0] - merged[-1][1] < int(min_gap * 100):
+            merged[-1][1] = sg[1]
         else:
-            merged.append(s)
-    segs = [(a * hop / SR, b * hop / SR) for a, b in merged if b - a > 3] or [(0, len(x) / SR)]
-    phrases = [p for p in re.split(r"(?<=[,.;:!?…])\s+", text.strip()) if p]
-    ws_by_phrase = [words_of(p) for p in phrases]
-    if len(segs) != len(phrases):
-        segs = [(segs[0][0], segs[-1][1])]
-        ws_by_phrase = [words_of(text)]
-    out = []
-    for (a, b), ws in zip(segs, ws_by_phrase):
-        wts = np.array([syllables(w) for w in ws], dtype=float)
-        edges = a + (b - a) * np.concatenate([[0], np.cumsum(wts) / wts.sum()])
-        for k, w in enumerate(ws):
-            out.append({"w": w, "s": round(float(edges[k]), 3), "e": round(float(edges[k + 1]), 3)})
+            merged.append(sg)
+    return [(a * hop / SR, b * hop / SR) for a, b in merged if b - a > 3] or [(0.0, len(x) / SR)]
+
+
+def _distribute(ws, t0, t1, segs):
+    """Distribui palavras entre t0..t1 proporcional às sílabas, pulando as pausas internas."""
+    parts = [(max(a, t0), min(b, t1)) for a, b in segs if b > t0 and a < t1] or [(t0, t1)]
+    total = sum(b - a for a, b in parts) or 1e-6
+    def real(v):  # tempo "falado" → tempo real
+        for a, b in parts:
+            if v <= b - a:
+                return a + v
+            v -= b - a
+        return parts[-1][1]
+    wts = np.array([syllables(w) for w in ws], dtype=float)
+    cum = np.concatenate([[0], np.cumsum(wts) / wts.sum()]) * total
+    return [{"w": w, "s": round(real(cum[k] + 1e-4), 3), "e": round(real(cum[k + 1]), 3)} for k, w in enumerate(ws)]
+
+
+def estimate_words(text, x, segs=None):
+    """Estima o tempo de cada palavra sem reconhecimento de fala:
+    1) mapeia as palavras pelo tempo de fala (proporcional às sílabas);
+    2) "imanta" cada fim de frase (pontuação) à pausa real mais próxima do áudio;
+    3) distribui as palavras de cada frase dentro do seu trecho, pulando pausas.
+    Funciona bem para TTS e para narrações gravadas com pausas naturais."""
+    segs = segs or voiced_segments(x)
+    ws = words_of(text)
+    if not ws:
+        return []
+    gaps = [(segs[i][1], segs[i + 1][0]) for i in range(len(segs) - 1)]
+    V = sum(b - a for a, b in segs)
+    def real(v):
+        for a, b in segs:
+            if v <= b - a:
+                return a + v
+            v -= b - a
+        return segs[-1][1]
+    wts = np.array([syllables(w) for w in ws], dtype=float)
+    cum = np.concatenate([[0], np.cumsum(wts) / wts.sum()]) * V
+    bounds = [k + 1 for k, w in enumerate(ws[:-1]) if re.search(r"[,.;:!?…]$", w)]
+    cuts, used = [], -1
+    for k in bounds:
+        t = real(cum[k])
+        cands = [(abs((g0 + g1) / 2 - t), gi) for gi, (g0, g1) in enumerate(gaps) if gi > used and abs((g0 + g1) / 2 - t) < 0.9]
+        if cands:
+            gi = min(cands)[1]
+            used = gi
+            cuts.append((k, gaps[gi][0], gaps[gi][1]))
+    out, k0, ts = [], 0, segs[0][0]
+    for k, g0, g1 in cuts + [(len(ws), segs[-1][1], None)]:
+        out += _distribute(ws[k0:k], ts, g0, segs)
+        k0, ts = k, g1
     return out
 
 

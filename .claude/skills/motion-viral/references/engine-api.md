@@ -37,7 +37,8 @@ O renderizador serve o projeto em `/` e a skill em `/_mv/`.
   "theme": { "colors": { "accent": "#00e5ff" } },   // overrides do tema (merge profundo)
   "captions": { "enabled": false, "emph": ["grátis"], "maxWords": 3 },
   "qa": { "whitelist": ["Novexa", "CapCut"] },     // nomes próprios/marcas para o corretor
-  "music": "media/musica.mp3",        // opcional (ou --music no make.py)
+  "music": "media/musica.mp3",        // opcional (ou --music no make.py / user_audio.py --mode music)
+  "imageStyle": "cinematic photo, teal and orange, 35mm",   // estilo comum das imagens geradas
   "scenes": [
     {
       "type": "hook",                 // hook|text|quote|list|stat|cta|image|html|<custom>
@@ -48,6 +49,10 @@ O renderizador serve o projeto em `/` e a skill em `/_mv/`.
       "sync": true,                   // palavra aparece quando é falada (padrão: true, exceto hook)
       "upper": true, "idle": 0.05, "hold": 0.3,      // hold = segura a cena +0.3 s
       "dur": 2.0,                     // só sem "say"
+      "image": "media/foto.jpg",      // imagem/vídeo da cena (qualquer tipo de cena)
+      "imageLayout": "cover",         // cover | card | float
+      "image_prompt": "close-up of…", // gen_images.py gera e preenche "image"
+      "seed": 7, "kenburns": "in", "imagePos": "50% 30%",
       "fit": { "max": 170, "min": 60, "maxLines": 4 },
       "start": 0, "end": 2.2, "words": []          // preenchidos pelo tts.py — não edite à mão
     }
@@ -123,6 +128,9 @@ Camadas do DOM: `#bg` → `#particles` → `#camera` (shake) → `#zoom` (punch/
 | `node scripts/render.mjs work/x --review` | stills automáticos + contact sheet |
 | `node scripts/render.mjs work/x [--draft] [--mblur 4] [--workers 4] [--crf 14]` | render |
 | `python scripts/master_audio.py work/x --music m.mp3 --music-db -16` | só áudio |
+| `python scripts/user_audio.py work/x voz.mp3 [--denoise] [--raw]` | narração enviada pelo usuário |
+| `python scripts/user_audio.py work/x musica.mp3 --mode music` | música enviada pelo usuário (+ beats) |
+| `python scripts/gen_images.py work/x [--provider pexels] [--only 2 --force]` | gerar imagens das cenas |
 | `python scripts/qa.py work/x` | QA final |
 | `python scripts/beats.py m.mp3 --out work/x/build/beats.json` | BPM/batidas |
 | `python scripts/analyze_reference.py ref.mp4 --out refs/nome [--compare out.mp4]` | dissecar referência |

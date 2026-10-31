@@ -42,6 +42,15 @@ body { -webkit-font-smoothing: antialiased; text-rendering: geometricPrecision; 
 .stat .num { font-family: var(--font-display), sans-serif; font-size: 260px; line-height: .95; color: var(--accent); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .stat .label { font-family: var(--font-body), sans-serif; font-weight: 800; }
 .media { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.mk-media { position: absolute; z-index: 0; overflow: hidden; }
+.mk-media-cover { inset: 0; }
+.mk-shade { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,.55) 0%, rgba(0,0,0,.25) 35%, rgba(0,0,0,.35) 60%, rgba(0,0,0,.75) 100%); }
+.mk-media-card { left: 110px; right: 160px; top: 270px; height: 620px; border-radius: 40px; box-shadow: 0 30px 80px rgba(0,0,0,.5), 0 0 0 6px rgba(255,255,255,.08); }
+.mk-media-float { left: 150px; right: 190px; top: 260px; height: 700px; overflow: visible; }
+.mk-media-float .media { object-fit: contain; filter: drop-shadow(0 30px 40px rgba(0,0,0,.55)); }
+.scene .textbox { z-index: 1; }
+.has-card .textbox, .has-float .textbox { top: 930px; }
+.has-cover .mk-text { text-shadow: 0 6px 30px rgba(0,0,0,.6); }
 .scene-image .textbox { justify-content: flex-end; }
 
 /* legendas karaokê */

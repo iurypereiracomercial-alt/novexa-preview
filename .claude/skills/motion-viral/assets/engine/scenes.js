@@ -31,6 +31,34 @@
     return times.map((x) => Math.max(t0, x));
   }
 
+  // Imagem/vídeo da cena: layout "cover" (fundo em tela cheia), "card" (cartão no topo) ou "float" (PNG recortado flutuando)
+  function addMedia(el, src, sc, theme) {
+    const layout = sc.imageLayout || (theme.imageLayout) || "cover";
+    const isVid = /\.(mp4|webm|mov)$/i.test(src);
+    const wrap = document.createElement("div"); wrap.className = `mk-media mk-media-${layout}`; el.appendChild(wrap);
+    el.classList.add(`has-${layout}`);
+    const m = document.createElement(isVid ? "video" : "img"); m.src = src; m.className = "media";
+    if (isVid) { m.muted = true; m.preload = "auto"; m.playsInline = true; m.dataset.start = sc.start; m.dataset.offset = sc.offset || 0; }
+    if (sc.imagePos) m.style.objectPosition = sc.imagePos;
+    wrap.appendChild(m);
+    const d = Math.max(0.5, sc.end - sc.start);
+    if (layout === "cover") {
+      const sh = document.createElement("div"); sh.className = "mk-shade"; wrap.appendChild(sh);
+      const kb = sc.kenburns || "in"; // in | out | left | right | none
+      const from = { in: { scale: 1.02 }, out: { scale: 1.16 }, left: { scale: 1.12, xPercent: 3 }, right: { scale: 1.12, xPercent: -3 }, none: { scale: 1 } }[kb];
+      const to = { in: { scale: 1.16 }, out: { scale: 1.02 }, left: { scale: 1.12, xPercent: -3 }, right: { scale: 1.12, xPercent: 3 }, none: { scale: 1 } }[kb];
+      MV.tl.fromTo(m, from, Object.assign({ duration: d, ease: "none", immediateRender: false }, to), sc.start);
+    } else if (layout === "card") {
+      MV.tl.from(wrap, { scale: 0.86, y: 60, autoAlpha: 0, rotation: -2, duration: 0.55, ease: "back.out(1.6)", immediateRender: false }, sc.start);
+      MV.tl.fromTo(m, { scale: 1.12 }, { scale: 1.0, duration: d, ease: "none", immediateRender: false }, sc.start);
+      MV.cue(sc.start, (theme.sfx || {}).transition || "swoosh", 0.5);
+    } else if (layout === "float") {
+      MV.tl.from(wrap, { scale: 0.6, autoAlpha: 0, y: 120, duration: 0.6, ease: "back.out(1.8)", immediateRender: false }, sc.start);
+      MV.onFrame((t) => { if (t >= sc.start && t <= sc.end) m.style.transform = `translateY(${(Math.sin((t - sc.start) * 2.2) * 14).toFixed(2)}px) rotate(${(Math.sin((t - sc.start) * 1.3) * 1.5).toFixed(2)}deg)`; });
+    }
+    return wrap;
+  }
+
   function textScene(el, sc, theme, type) {
     const box = document.createElement("div"); box.className = "textbox"; el.appendChild(box);
     if (sc.kicker) { const k = document.createElement("div"); k.className = "kicker"; k.textContent = sc.kicker; box.appendChild(k); MV.tl.add(MK.enter.fade(k, { dur: 0.35 }), sc.start + 0.02); }
@@ -105,10 +133,7 @@
       const ex = sc.exit || th.exit || "up"; if (!sc.last) MV.tl.add(MK.exit[ex](box), Math.max(sc.start + 0.3, sc.end - (MK.exitDur[ex] || 0.2)));
     },
     image: (el, sc, th, i) => {
-      const media = document.createElement(/\.(mp4|webm|mov)$/i.test(sc.src || "") ? "video" : "img"); media.className = "media"; media.src = sc.src;
-      if (media.tagName === "VIDEO") { media.muted = true; media.preload = "auto"; media.dataset.start = sc.start; media.dataset.offset = sc.offset || 0; }
-      el.appendChild(media);
-      MV.tl.fromTo(media, { scale: 1.18 }, { scale: 1.02, duration: sc.end - sc.start, ease: "none", immediateRender: false }, sc.start); // Ken Burns
+      addMedia(el, sc.src || sc.image, sc, th);
       if (sc.show) animateText(sc, th, textScene(el, sc, th, "text"), i);
     },
     html: (el, sc, th) => { el.innerHTML = sc.html || ""; el.querySelectorAll("[data-anim]").forEach((n, k) => MV.tl.add((MK.enter[n.dataset.anim] || MK.enter.pop)(n), sc.start + 0.02 + k * 0.08)); },
@@ -152,6 +177,7 @@
         const tr = sc.transition || (i === 0 ? theme.hookTransition : (theme.transitions ? theme.transitions[(i - 1) % theme.transitions.length] : theme.transition));
         if (tr) MK.transition(tr, sc.start, theme);
         if ((theme.sfx || {}).enter && i > 0 && !tr) MV.cue(sc.start, theme.sfx.enter, 0.5);
+        if (sc.image && sc.type !== "image") addMedia(el, sc.image, sc, theme);
         (builders[sc.type] || builders.text)(el, sc, theme, i);
       });
 
@@ -162,6 +188,9 @@
       MV.duration = meta.duration || Math.max(end, data.audioDuration || 0) || MV.tl.duration();
       MV.tl.set({}, {}, MV.duration); // estende a timeline até o fim
       if (typeof window.MV_CUSTOM === "function") await window.MV_CUSTOM(data, theme);
+      // espera todas as imagens decodificarem e os vídeos carregarem (sem quadro em branco no render)
+      await Promise.all([...document.images].map((im) => im.decode().catch(() => MV.warn("Imagem não carregou: " + im.getAttribute("src")))));
+      await Promise.all([...document.querySelectorAll("video")].map((v) => v.readyState >= 2 ? 0 : new Promise((r) => { v.addEventListener("loadeddata", r, { once: true }); v.addEventListener("error", () => { MV.warn("Vídeo não carregou: " + v.getAttribute("src")); r(); }, { once: true }); })));
       MV.cues.sort((a, b) => a.t - b.t);
       await MV.seek(0);
       window.__MV_READY = true;

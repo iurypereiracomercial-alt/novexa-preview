@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """
 MAKE — pipeline completo em um comando:
-  1. tts.py           narração + sincronia da timeline (pula se não houver "say")
+  0. gen_images.py    (--gen-images) gera as imagens das cenas com "image_prompt"
+  1. tts.py           narração IA + timeline   |  user_audio.py (--voice-file) narração enviada pelo usuário
   2. render --preflight-only   fontes, glifos, layout, cues de SFX
   3. master_audio.py  voz tratada + música com ducking + SFX + -14 LUFS
   4. render --review  stills de revisão + contact sheet (para conferência visual)
@@ -12,6 +13,7 @@ Uso:
   python make.py <projeto> [--engine auto|edge|kokoro|none] [--voice X] [--rate +8%]
                  [--music musica.mp3] [--music-db -16] [--beats] [--mblur 4] [--draft]
                  [--skip-tts] [--no-final]   (--no-final: para após os stills, para revisar antes)
+                 [--voice-file narracao.mp3 [--voice-denoise] [--voice-raw]] [--gen-images]
 """
 import argparse
 import subprocess
@@ -46,6 +48,11 @@ def main():
     ap.add_argument("--draft", action="store_true")
     ap.add_argument("--skip-tts", action="store_true")
     ap.add_argument("--no-final", action="store_true")
+    ap.add_argument("--voice-file", help="narração gravada/enviada pelo usuário (substitui o TTS)")
+    ap.add_argument("--voice-denoise", action="store_true")
+    ap.add_argument("--voice-raw", action="store_true", help="não tratar a voz (áudio já masterizado)")
+    ap.add_argument("--whisper", default="auto")
+    ap.add_argument("--gen-images", action="store_true", help="gera imagens das cenas com image_prompt")
     a = ap.parse_args()
     p = str(Path(a.project).resolve())
     py, node = sys.executable, "node"
@@ -55,7 +62,19 @@ def main():
         if a.music_offset:
             bcmd += ["--offset", a.music_offset]
         step("Beats da música", bcmd)
-    if not a.skip_tts:
+    if a.gen_images:
+        step("0/6 Imagens", [py, str(HERE / "gen_images.py"), p])
+        print(f"→ Revise {p}/build/images_sheet.png antes de seguir (deformações, texto falso, marca d'água).")
+    if a.voice_file and not a.skip_tts:
+        cmd = [py, str(HERE / "user_audio.py"), p, str(Path(a.voice_file).resolve()), "--whisper", a.whisper]
+        if a.lang:
+            cmd += ["--lang", a.lang.split("-")[0]]
+        if a.voice_denoise:
+            cmd.append("--denoise")
+        if a.voice_raw:
+            cmd.append("--raw")
+        step("1/6 Narração do usuário + timeline", cmd)
+    elif not a.skip_tts:
         cmd = [py, str(HERE / "tts.py"), p, "--engine", a.engine]
         for k in ("voice", "rate", "speed", "lang"):
             if getattr(a, k):

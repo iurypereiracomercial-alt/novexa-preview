@@ -118,6 +118,8 @@ const write = (stream, buf) => new Promise((r) => (stream.write(buf) ? r() : str
     const main = await openPage(browser, url, errors);
     const info = await main.page.evaluate(() => ({ grain: (window.MV.theme || {}).grain || 0, duration: window.MV.duration, cues: window.MV.cues, warnings: window.MV.warnings, scenes: (window.MV.data.scenes || []).map((s) => ({ type: s.type, start: s.start, end: s.end, show: s.show })) }));
     const fontRep = await main.page.evaluate(() => window.MV.checkFonts());
+    const mediaRep = await main.page.evaluate(() => window.MV.checkMedia());
+    info.warnings.push(...mediaRep.filter((m) => m.level === "aviso").map((m) => m.msg));
     const layout = []; const step = 0.1;
     for (let t = 0; t <= info.duration + 1e-6; t += step) { await main.page.evaluate((tt) => window.MV.seek(tt), t); layout.push(...(await main.page.evaluate(([tt, s]) => window.MV.checkLayout(tt, s), [t, SAFE]))); }
     // agrupa ocorrências e ignora estados transitórios (entradas/saídas/whips duram < 0.3s):
@@ -130,7 +132,7 @@ const write = (stream, buf) => new Promise((r) => (stream.write(buf) ? r() : str
     fs.writeFileSync(path.join(BUILD, "meta.json"), JSON.stringify({ duration: info.duration, fps: FPS, width: W, height: H, scenes: info.scenes }, null, 2));
     const pre = { fontProblems: fontRep.problems, layoutIssues, warnings: info.warnings, pageErrors: errors.slice() };
     fs.writeFileSync(path.join(QA, "preflight.json"), JSON.stringify(pre, null, 2));
-    const fatal = [...pre.fontProblems, ...pre.pageErrors, ...layoutIssues.filter((x) => x.level === "erro").map((x) => `${x.msg} (t=${x.times.slice(0, 6).join(", ")}${x.times.length > 6 ? "…" : ""})`)];
+    const fatal = [...pre.fontProblems, ...pre.pageErrors, ...mediaRep.filter((m) => m.level === "erro").map((m) => m.msg), ...layoutIssues.filter((x) => x.level === "erro").map((x) => `${x.msg} (t=${x.times.slice(0, 6).join(", ")}${x.times.length > 6 ? "…" : ""})`)];
     log(`duração ${info.duration.toFixed(2)}s • ${info.scenes.length} cenas • ${info.cues.length} cues de SFX • ${fontRep.texts.length} blocos de texto`);
     pre.warnings.forEach((w) => log("AVISO:", w));
     layoutIssues.filter((x) => x.level === "aviso").forEach((x) => log("AVISO:", x.msg, "t=" + x.times.slice(0, 4).join(",")));

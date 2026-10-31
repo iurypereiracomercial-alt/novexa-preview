@@ -67,13 +67,16 @@ def main():
         vo = None
         if vo_path.exists():
             proc = Path(tmp) / "vo_proc.wav"
-            ff(["-i", str(vo_path), "-af", VO_CHAIN, "-ar", str(SR), "-ac", "2", "-c:a", "pcm_f32le", str(proc)])
+            raw = (data.get("meta", {}).get("tts") or {}).get("raw")  # áudio do usuário já pronto → não reprocessa
+            ff(["-i", str(vo_path), "-af", "anull" if raw else VO_CHAIN, "-ar", str(SR), "-ac", "2", "-c:a", "pcm_f32le", str(proc)])
             vo = decode(proc)[:n]
             mix[: len(vo)] += vo
             report["voice"] = True
 
         # ---- música com ducking
         music = a.music or data.get("music")
+        if not a.music_offset and data.get("meta", {}).get("musicOffset"):
+            a.music_offset = float(data["meta"]["musicOffset"])
         if music:
             mpath = Path(music) if Path(music).is_absolute() else (proj / music)
             m = decode(mpath)
@@ -87,7 +90,8 @@ def main():
             m[-fo:] *= np.linspace(1, 0, fo)[:, None]
             # normaliza a música para ~-14 LUFS aprox. via RMS, depois aplica o nível relativo
             rms = np.sqrt(np.mean(m ** 2)) or 1
-            m *= (0.2 / rms) * undb(a.music_db + 6)
+            mdb = a.music_db if (vo is not None or a.music_db != -16.0) else -6.0  # sem voz, a música é a protagonista
+            m *= (0.2 / rms) * undb(mdb + 6)
             if vo is not None:
                 hop = int(0.01 * SR)
                 env = envelope(vo, win=0.03)[::hop]

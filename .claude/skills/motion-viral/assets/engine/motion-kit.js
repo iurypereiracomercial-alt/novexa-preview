@@ -369,6 +369,17 @@
     Object.entries(glyphMissing).forEach(([fam, set]) => problems.push(`Fonte "${fam}" NÃO tem os glifos: ${[...set].join(" ")} (aparecerão com outra fonte — troque a fonte ou o caractere)`));
     return { problems, texts: entries };
   };
+  // Mídias: resolução suficiente para o tamanho em que aparecem?
+  MV.checkMedia = function () {
+    const out = [];
+    document.querySelectorAll(".mk-media img, .mk-media video").forEach((m) => {
+      const w = m.naturalWidth || m.videoWidth, h = m.naturalHeight || m.videoHeight; const r = m.parentElement.getBoundingClientRect();
+      if (!w) { out.push({ level: "erro", msg: `Mídia sem conteúdo: ${m.getAttribute("src")}` }); return; }
+      const need = Math.max(r.width / w, r.height / h);
+      if (need > 1.35) out.push({ level: "aviso", msg: `Imagem em baixa resolução (${w}x${h}, ampliada ${need.toFixed(1)}x): ${m.getAttribute("src")} — use ≥ ${Math.round(r.width)}x${Math.round(r.height)}` });
+    });
+    return out;
+  };
   // Verifica layout num instante t: texto visível fora da tela, fora da safe zone, cortado ou sobreposto
   MV.checkLayout = function (t, safe) {
     const issues = []; const els = [...document.querySelectorAll(".mk-text, .mk-cap, [data-qa-text]")];
