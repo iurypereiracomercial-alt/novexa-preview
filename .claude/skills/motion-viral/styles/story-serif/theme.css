@@ -1,0 +1,8 @@
+.style-story-serif .mk-text { font-weight: 400; line-height: 1.06; letter-spacing: -.01em; }
+.style-story-serif .mk-text .hl:has(.mk-marker) .wi { color: #14100c; }
+.style-story-serif .mk-marker { top: .2em; bottom: .02em; border-radius: .04em; opacity: .95; }
+.style-story-serif .kicker { font-family: "Inter"; font-weight: 700; letter-spacing: .22em; color: var(--accent2); font-size: 34px; }
+.style-story-serif .stat .num { font-family: "DM Serif Display"; color: var(--accent); }
+.style-story-serif .stat .label { font-family: "Inter"; font-weight: 600; }
+.style-story-serif .list-num { font-family: "DM Serif Display"; font-style: normal; color: var(--accent); }
+.style-story-serif .mk-cap { font-family: "Inter"; font-weight: 800; text-transform: none; }

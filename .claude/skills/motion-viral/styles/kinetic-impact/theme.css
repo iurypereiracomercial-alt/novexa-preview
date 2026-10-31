@@ -1,0 +1,6 @@
+.style-kinetic-impact .mk-text { letter-spacing: .005em; line-height: 1.0; text-shadow: 0 10px 40px rgba(0,0,0,.45); }
+.style-kinetic-impact .mk-text .w { margin: .02em .03em; }
+.style-kinetic-impact .mk-box { left: -.1em; right: -.1em; top: .06em; bottom: -.02em; border-radius: .08em; }
+.style-kinetic-impact .kicker { color: var(--accent2); }
+.style-kinetic-impact .stat .num { text-shadow: 0 0 60px rgba(255,214,10,.35); }
+.style-kinetic-impact .label { color: #fff; }

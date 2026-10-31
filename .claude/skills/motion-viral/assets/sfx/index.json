@@ -1,0 +1,43 @@
+{
+  "_version": 4,
+  "whoosh": {
+    "anchor": 0.372,
+    "dur": 0.6
+  },
+  "swoosh": {
+    "anchor": 0.209,
+    "dur": 0.38
+  },
+  "pop": {
+    "anchor": 0.004,
+    "dur": 0.12
+  },
+  "impact": {
+    "anchor": 0.003,
+    "dur": 1.1
+  },
+  "riser": {
+    "anchor": 0.0,
+    "dur": 1.1
+  },
+  "glitch": {
+    "anchor": 0.0,
+    "dur": 0.22
+  },
+  "click": {
+    "anchor": 0.0,
+    "dur": 0.03
+  },
+  "tick": {
+    "anchor": 0.0,
+    "dur": 0.05
+  },
+  "ding": {
+    "anchor": 0.002,
+    "dur": 1.4
+  },
+  "bass": {
+    "anchor": 0.0,
+    "dur": 0.9
+  }
+}

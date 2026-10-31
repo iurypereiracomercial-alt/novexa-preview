@@ -1,0 +1,12 @@
+/* Fontes locais (todas OFL / Google Fonts) — carregadas do disco para render 100% determinístico.
+   Para adicionar uma fonte nova: scripts/fetch_font.py "Nome da Fonte" e importe o CSS gerado. */
+@font-face { font-family: "Anton"; src: url("Anton-Regular.ttf") format("truetype"); font-weight: 400; font-display: block; }
+@font-face { font-family: "Bebas Neue"; src: url("BebasNeue-Regular.ttf") format("truetype"); font-weight: 400; font-display: block; }
+@font-face { font-family: "Archivo Black"; src: url("ArchivoBlack-Regular.ttf") format("truetype"); font-weight: 400; font-display: block; }
+@font-face { font-family: "DM Serif Display"; src: url("DMSerifDisplay-Regular.ttf") format("truetype"); font-weight: 400; font-display: block; }
+@font-face { font-family: "Poppins"; src: url("Poppins-ExtraBold.ttf") format("truetype"); font-weight: 800; font-display: block; }
+@font-face { font-family: "Poppins"; src: url("Poppins-Black.ttf") format("truetype"); font-weight: 900; font-display: block; }
+@font-face { font-family: "Montserrat"; src: url("Montserrat-VF.ttf") format("truetype"); font-weight: 100 900; font-display: block; }
+@font-face { font-family: "Inter"; src: url("Inter-VF.ttf") format("truetype"); font-weight: 100 900; font-display: block; }
+@font-face { font-family: "Space Grotesk"; src: url("SpaceGrotesk-VF.ttf") format("truetype"); font-weight: 300 700; font-display: block; }
+@font-face { font-family: "JetBrains Mono"; src: url("JetBrainsMono-VF.ttf") format("truetype"); font-weight: 100 800; font-display: block; }

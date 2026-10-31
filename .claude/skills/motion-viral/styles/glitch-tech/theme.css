@@ -1,0 +1,9 @@
+.style-glitch-tech .mk-text { font-weight: 700; letter-spacing: -.02em; line-height: 1.02; text-shadow: 3px 0 rgba(255,43,214,.55), -3px 0 rgba(0,255,240,.45); }
+.style-glitch-tech .mk-text .w[data-boxed="1"] .wi, .style-glitch-tech .hl:has(.mk-marker) .wi { color: #05070a; text-shadow: none; }
+.style-glitch-tech .mk-marker { border-radius: 0; }
+.style-glitch-tech .kicker, .style-glitch-tech .list-num { font-family: "JetBrains Mono"; color: var(--accent); }
+.style-glitch-tech .kicker::before { content: "> "; }
+.style-glitch-tech .stat .num { font-family: "JetBrains Mono"; font-weight: 800; color: var(--accent); text-shadow: 0 0 40px rgba(0,255,136,.45); }
+.style-glitch-tech #stage::before { content: ""; position: absolute; inset: 0; z-index: 6; pointer-events: none;
+  background: repeating-linear-gradient(0deg, rgba(0,0,0,.18) 0 2px, transparent 2px 5px); }
+.style-glitch-tech .mk-cap { font-family: "JetBrains Mono"; }

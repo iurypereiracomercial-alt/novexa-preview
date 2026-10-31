@@ -1,0 +1,7 @@
+.style-clean-premium .mk-text { font-weight: 800; letter-spacing: -.035em; line-height: 1.04; }
+.style-clean-premium .kicker { color: #6e6e73; font-weight: 600; letter-spacing: .02em; text-transform: none; }
+.style-clean-premium .stat .num { color: var(--text); font-weight: 800; letter-spacing: -.05em; font-family: "Inter"; }
+.style-clean-premium .stat .label { color: #6e6e73; font-weight: 600; }
+.style-clean-premium .list-num { font-family: "Inter"; font-weight: 800; font-size: 140px; letter-spacing: -.04em; }
+.style-clean-premium .mk-cap { color: #111; -webkit-text-stroke: 0; text-shadow: none; font-weight: 800; text-transform: none; }
+.style-clean-premium #progress { background: var(--text); }
